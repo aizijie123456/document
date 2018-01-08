@@ -1,0 +1,6 @@
+持久化存储:
+互联网领域常见的三种数据存储方式,
+包括
+关系型数据库MYSQL，
+Google提出的bigtable概念及其开源实现HBase，
+包含丰富数据类型的key-value存储redis；

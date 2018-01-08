@@ -1,0 +1,137 @@
+1.
+进程：进程是操作系统机构的基础，是一次程序的执行，是一个程序机器数据在处理机上顺序执行时所发生的活动，是程序在一个数据集合上运行的过程，他是系统进行资源分配和调度的一个独立单位。
+线程:线程可以理解成是进程中独立运行的子任务。
+2.多线程是异步的
+3.实现多线程的方式主要有两种，一种是继承Thread类，另一种是实现Runnable接口
+4.实例变量与线程安全
+非线程安全主要是指多个线程对同一个对象中的同一个实例变量进行操作室会出现值被更改、值不同步的情况，进而影响程序的执行流程。
+5.线程停止
+使用interrupt停止线程，但是该方法并不是立即停止，仅仅是在当前线程中打了一个停止的标记。
+6.thread.currentthread() 和this 的区别
+public class hello extends Thread {
+public hello(){
+System.out.println("Thread.currentThread().getname()="+Thread.currentThread().getName());
+System.out.println("This.getName="+this.getName());
+}
+public void run(){
+System.out.println("Thread.currentThread().getname()="+Thread.currentThread().getName());
+System.out.println("This.getName="+this.getName());
+}
+public static void main(String[] args){
+hello thread =new hello();
+Thread t1 =new Thread(thread);
+t1.setName("A");
+t1.start();
+}
+}
+得到结果
+Thread.currentThread().getname()=main
+This.getName=Thread-0
+Thread.currentThread().getname()=A
+This.getName=Thread-0
+
+这个问题的关键应该在于为什么t1线程在执行的时候，照理说此时的Thread.currentThread()和this不应该指向同一个线程实例么？那么它们调用getName()的返回值应该相同才对啊。
+看运行结果只能说明，t1在执行的时候，代码中的this和Thread.currentThreat()指向的不是同一个线程实例。也就是说，this指向的还是new hello()创建的那个线程实例，而不是new Thread(thread)创建的那个实例即t1。查看源代码可以知道。实际上new Thread(thread)会将thread应用的对象绑定到一个pravite变量target上，在t1被执行的时候即t1.run()被调用的时候，它会调用target.run()方法，也就是说它是直接调用thread对象的run方法，再靠近点说，在run方法被执行的时候，this.getName()实际上返回的是target.getName()，而Thread.currentThread().getName()实际上是t1.getName()。 
+
+
+停止线程的方法：
+stop（），会造成数据的损坏，已经弃用
+Interrupt（），通过设置状态位来停止，但是不能立即停止，需要配合Thread.interrupt + return 判断来使用 ;
+
+
+线程暂停和回复方法: suspend()  resume()
+在使用这两个方法的时候，极易造成公共对象的独占，使得其他线程无法访问公共同步对象。
+
+yield()方法的作用是放弃当前的CPU资源，将他让给其他的任务去占用CPU执行时间。但是放弃的时间不确定，有可能刚刚放弃马上又获得
+cpu时间片
+
+线程的优先级:
+使用setPriority()方法来设置，高优先级的线程比低优先级的线程先执行完，但并不是说高优先级的线程都执行完才去执行低优先级的线程，只能说CPU会尽量的将执行资源让给线程优先级高的。而且优先级有随机性，并不是每一次优先级高的都能够先执行完。
+也就是说不要把线程的优先级与运行结果的顺序作为衡量的标准。
+
+守护线程:java线程中有两种线程，一种是用户线程，另一种是守护线程。
+守护线程是一种特殊的线程，他的特性有陪伴的含义，当进程中不存在非守护线程了，则守护线程自动销毁。典型的守护线程就是垃圾回收线程。
+
+synchronized
+如果一个对象有两个方法，A，B，两个线程分别调用两个方法。
+1.如果两个方法都有synchronized，则整个对象锁住，即使线程A访问A方法，线程B访问B方法，也无法同时访问
+2.如果只有一个方法有synchronized，则线程B可以通过异步调用对象B方法，不受锁限制
+
+
+可重入锁：自己可以再次获取自己的内部锁。比如有一条线程获得了某个对象的锁，此时这个对象锁还没有释放，当其再次想要获取这个对象的所得时候还是可以获取的。如果不可锁重入的话，就会产生死锁。
+
+当一个线程执行的代码出现异常时候，其所持有的锁会自动释放。
+
+同步不能继承：Class A   拥有一个synchronized 方法A ，class B 继承A重写方法A，此时重写的A如果不加sunchronized关键字，是线程不同步的，synchronized是不被继承的；
+
+synchronized(this) 和 synchronized(*.class)/static 的区别：
+前者是锁class的对象，后者是锁当前的class；前者只能锁住一个实例对象，后者锁住所有的实例对象；
+
+
+同步代码块synchronized(obj)一般不要使用string作为锁对象，JVM有常量池，同样的String在常量池中缓存成一个对象，可能导致异常。
+
+关键字volatile的主要作用是使变量在多个线程之间可见.作用是当线程访问全局变量的时候，强制从公共堆栈中取值。
+虽然volatile增加了实例变量在多个线程之间的可见性，但volatile关键字最致命的缺点是不支持原子性。
+
+
+
+
+
+线程私有堆栈和公共堆栈的区别：线程的变量是存储在私有栈中的，线程之间的私有变量不共享。
+
+公有栈从何而来？
+java中全局变量存储在堆中，可以被共享，局部变量存储在栈中，不被共享。所以线程中的全局变量是存储在堆中，而每个线程都有一个对应的私有栈用来存储线程私有变量。所以线程的私有栈会有另一份全局变量，这两个值在线程程序执行完毕之前不会同步，线程运行时我们更改的全局变量更改的是堆中的变量，导致线程私有栈的变量没有被同步。
+
+我们的问题 -server 死循环问题正是因为在server运行中为了提高效率，只会从线程的私有栈中获取变量的值；这样会导致一些问题。
+参考：http://www.iteye.com/problems/24814
+
+
+wait() 和 notify()
+当一个线程调用wait方法，则释放锁，处于暂停状态，当其他线程调用notify方法是会被唤醒，调用notify方法后不会立即释放锁，会等到nofity方法的父方法执行完毕或者synchronized的同步方法执行完成才会释放。
+
+ 当线程呈现wait状态的时候，调用线程对象的interrupt()方法会出现InterruptedExcepton异常
+
+假死的主要原因是可能连续的唤醒同类，要解决这个问题的办法就是将同类和异类一同唤醒，比如生产者和消费者同时唤醒
+
+使用输入输出流连实现线程间的通信：
+PipedInputStream PipedOutStream
+PipedRead        PipedWriter
+
+
+Join方法的作用是等待线程对象销毁。
+
+Join(long) 和 sleep(long)的区别
+
+Join方法内部实际上调用的是wait方法，在等等待执行期间释放对象的锁，而sleep在等待期间并不释放对象的锁
+
+ThreadLocal 解决的是变量在不同线程之间的隔离性，也就是不同线程拥有自己的值，不同线程中的值是可以放入ThreadLocal类中进行保存的
+
+使用lock可以达到synchronized的功能，并且lock更灵活，效率更高，lock 与 condition结果使用同样可是实现await、notify的功能。
+
+
+Lock的公平锁和非公平锁：
+公平所表示线程获取锁的顺序是按照线程加载的顺序来分配的，即FIFO。
+非公平锁就是一种获取锁的枪战机制，是随机获得锁的，和公平锁不一样的就是先来的不一定先得到锁
+
+线程组:可以吧线程归属到某一个线程组中，线程组中可以有线程对象，也可以有线程组，组中还可以有线程，类似于树的形式。
+线程组的作用是可以批量的管理线程或线程组对象，有效地对线程或线程组对象进行组织
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

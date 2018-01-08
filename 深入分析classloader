@@ -1,0 +1,53 @@
+ClassLoader有四个主要的方法:
+defineClass:讲byte字节流解析成jvm能够识别的对象。通常与findClass一起使用。
+findClass:可以覆盖父类的findClass方法来实现类的加载规则，从而取得要要加载的类的字节码。
+loadClass:如果不想重新定义class的加载规则，也没有复杂的逻辑，仅仅只是想在运行期加载自己指定的一个类，我们可以使用
+		  this.getClass().getClassLoader().loadClass('className');
+resolveClass:defineClass生成的类对象还没有resolve，resolve在类真正实例化的时候才会调用。如果想要在类加载到jvm时候就实例化			     ，在defineClass后要直接调用resolveClass方法。
+
+JVM提供了三个classLoader类：
+Bootstrap ClassLoader:主要加载jvm自身工作需要的类，完全是jvm自己控制的，没有父子关系，别人也无法访问使用这个类。
+ExtClassLoader:它是jvm中自身的一部分，但并不是jvm亲自实现的，它服务的特定目标在System.getProperty("java.ext.dirs")目录下
+AppClassLoader:这个类主要加载我们定义的class，父类是ExtClassLoader，所有在System.getProperty("java.class.path")目录下的类都可以被这个类加载器加载，这个目录就是我们经常使用的classpath；
+
+JVM加载class文件到内存有两种方式：
+隐式加载:不通过在代码中调用ClassLoader来加载需要的类，比如继承或者引用某个类的时候，JVM在解析当前类的时候发现引用的累不在内存中，那么就会自动将这些类加载到内存中。
+显示加载：在代码中调用ClassLoader类来加载一个类。this.getClass.getClassLoader().loadClass() 或者 Class.forName();
+
+加载class文件的过程:
+.class文件->findClass()->[class规范验证，准备，解析class(resolving)]->雷属性初始化赋值->Class对象
+第一个阶段就是找到.class文件并把这个文件的字节码加载到内存中。
+第二个阶段就是字节码验证，Class类数据结构分析以及相应的内存分析和最后的符号表的链接。
+第三个结算就是类中的静态属性和初始化赋值，以及静态块的执行。
+
+Java应不应该动态加载类
+Java的又是正式给予共享对象的机制，达到信息的高度共享，也就是通过保存并持有对象的状态而省去类信息的重复创建和回收。我们知道对象一旦被创建，这个对象就可以被人持有和利用。
+如果我们动态加载一个对象进入JVM，理论上可以直接替换这个对象，然后更新java栈中多有对原对象的引用关系，但是不但违反了JVM的设计原则，而且对象的引用关系只有对象的创建者持有和使用，JVM不能干预对象的引用关系，因为JVM并不知道对象的运行时类型而是只知道编译时的类型
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

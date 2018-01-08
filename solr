@@ -1,0 +1,9 @@
+solr 
+启动命令:
+	bin/solr start
+	bin/solr start -e cloud -noprompt
+结束命令:bin/solr stop -all ; rm -Rf example/cloud/
+
+
+创建一个solr core:
+bin/solr create -c <core-name>

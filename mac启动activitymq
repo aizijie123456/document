@@ -1,0 +1,25 @@
+ 在官网http://activemq.apache.org/activemq-5132-release.html 下载最新的二进制包 apache-activemq-5.13.2-bin.tar.gz
+ 
+     解压到某个目录下，打开mac终端，输入以下命令切换到ActiveMQ主目录
+ 
+Java代码  收藏代码
+cd /Users/xxxx/Downloads/apache-activemq-5.13.2/bin/macosx  
+ 
+    输入以下命令启动ActiveMQ
+  
+Java代码  收藏代码
+./activemq start  
+ 
+    看到如下提示表示启动成功
+  
+Java代码  收藏代码
+Starting ActiveMQ Broker...  
+ 
+    在浏览器中输入如下地址
+ 
+    http://127.0.0.1:8161/admin/
+ 
+   然后输入用户名 admin 密码 admin便可登录控制台
+ 
+注意，生产环境中应该修改这个密码，只要找到如下文件打开修改即可
+/Users/xxxx/Downloads/apache-activemq-5.13.2/conf/users.properties
