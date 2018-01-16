@@ -1,0 +1,14 @@
+Spring boot 连接Docker mongo db 的方法
+
+1.docker pull  mongo   安装mongo 在docker
+2.docker images mongo  查看安装结果
+3.docker run -d -p 27017:27017 mongo  启动mongo db 并且暴露端口给当前物理机
+4.docker ps -a  查看当前docker 中 mongo db 的运行情况，可以看到 container id
+5.docker exec -it containerId /bin/bash 进入mongo
+6.在控制台 运行 mongo 命令
+7.show dbs 查看数据库
+8.use test 创建新的数据库，创建的数据库因为是空的所以看不到
+9.db.items.insert({"name":"test"})  插入一条数据
+10.show dbs 就能看到新创建的数据库
+11.db.createUser({user:"root",pwd:"root",roles:[{role:'root',db:'admin'}]})  创建用户
+12.spring boot 中使用 spring.data.mongodb.uri=mongodb://root:root@localhost/test  连接成功；
