@@ -1,0 +1,88 @@
+ContextLoaderListener 和 DispatcherServlet 各自都会加载一个Spring上下文信息；
+上下文参数contextConfigLocation制定了一个xml文件的地址，这个文件定义了根应用上下文
+它会被ContextLoaderListener加载；
+DispatcherServlet会根据Servlet的名字找到一个文件，并给予该文件加载应用上下文，
+Servlet的名字是appServlet,因此DispatcherServlet会从WEBIN下查找appServlet-context.xml
+文件中加载器应用上下文；
+
+ContextLoaderListener 和 DispatcherServlet的区别:
+
+
+ContextLoaderListener和DispatcherServlet都会在Web容器启动的时候加载一下bean配置. 区别在于:
+
+    DispatcherServlet一般会加载MVC相关的bean配置管理(如: ViewResolver, Controller, MultipartResolver, ExceptionHandler, etc.)
+    ContextLoaderListener一般会加载整个Spring容器相关的bean配置管理(如: Log, Service, Dao, PropertiesLoader, etc.)
+
+DispatcherServlet默认使用WebApplicationContext作为上下文.
+
+DispatcherServlet也可以配置自己的初始化参数，覆盖默认配置:
+
+参数
+	
+
+描述
+
+contextClass
+	
+
+实现WebApplicationContext接口的类，当前的servlet用它来创建上下文。如果这个参数没有指定， 默认使用XmlWebApplicationContext。
+
+contextConfigLocation
+	
+
+传给上下文实例（由contextClass指定）的字符串，用来指定上下文的位置。这个字符串可以被分成多个字符串（使用逗号作为分隔符） 来支持多个上下文（在多上下文的情况下，如果同一个bean被定义两次，后面一个优先）。
+默认为/WEB-INF/[server-name]-servlet.xml
+
+namespace
+	
+
+WebApplicationContext命名空间。默认值是[server-name]-servlet。
+
+如下:
+[xml] view plain copy
+
+    <servlet>  
+            <servlet-name>demo</servlet-name>  
+            <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>  
+            <load-on-startup>1</load-on-startup>  
+            <init-param>  
+                <param-name>contextConfigLocation</param-name>  
+                <param-value>classpath:spring-servlet-config.xml</param-value>  
+            </init-param>  
+    </servlet>  
+    <servlet-mapping>  
+            <servlet-name>demo</servlet-name>  
+            <url-pattern>/</url-pattern>  
+    </servlet-mapping>  
+
+
+值得注意的是, DispatcherServlet的上下文仅仅是spring MVC的上下文, 而ContextLoaderListener的上下文则对整个Spring都有效. 一般Spring web项目中同时会使用这两种上下文. 
+
+
+上下文创建完后会放在ServletContext对象中, 其中:
+
+1) ContextLoaderListener加载的上下文放在ServletContext的key为WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE属性中;
+
+2) DispatcherServlet加载的上下文在每次请求时会放一份在request对象的key为WEB_APPLICATION_CONTEXT_ATTRIBUTE属性中. 
+
+因而两者的获取方式也不一样, 前者可以通过:
+
+WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext)或
+
+WebApplicationContextUtils.getWebApplicationContext(servletContext)或
+
+WebApplicationContextUtils.getWebApplicationContext(servletContext,attrname)方法来获取对应的applicationContext,
+
+
+而后者则通过:
+
+RequestContextUtils.getWebApplicationContext(request)或 
+
+WebApplicationContextUtils.getWebApplicationContext(servletContext,attrname)方法来获取对应的applicationContext.
+
+(注: 对于ContextLoaderListener加载的上下文, attrname即上面提到的WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE; 
+
+而对于DispatcherServlet中的上下文则为FrameworkServlet.class.getName() + ".CONTEXT." + getServletName())
+
+
+通过上下文所在的属性可以看出，如果通过WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext)来试图获取DispatcherServlet加载的applicationContext时, 就会抛出"No WebApplicationContext found: no ContextLoaderListener registered?"的异常.
