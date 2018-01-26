@@ -1,0 +1,53 @@
+@FunctionalInterface
+public interface Callable<V> {
+    /**
+     * Computes a result, or throws an exception if unable to do so.
+     *
+     * @return computed result
+     * @throws Exception if unable to compute a result
+     */
+    V call() throws Exception;
+}
+
+Callable接口支持泛型，传入的泛型是call方法的返回类型
+
+package com.demo.feature;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+
+public class FeatureDemo {
+
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		ExecutorService es = Executors.newCachedThreadPool();
+		Callable<String> callable = new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				Thread.sleep(3000);
+				System.out.println("callable ...");
+				return "hello";
+			}
+		};
+
+		FutureTask<String> futureTask = new FutureTask<String>(callable);
+		es.submit(futureTask);
+		System.out.println("get callable ...");
+
+		while (true) {
+			if (futureTask.isDone()) {
+				System.out.println("thread done ...");
+				String result = futureTask.get();
+				System.out.println("result:" + result);
+				break;
+			} else {
+				System.out.println("thread running ...");
+				Thread.sleep(500);
+			}
+		}
+
+	}
+
+}
